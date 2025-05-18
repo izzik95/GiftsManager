@@ -1,8 +1,8 @@
 import requests
 import time
 
-# Вставьте ваш токен
-TOKEN = "7544083847:AAH8JqMkrrcsh--WINi9Kjw0bfcRdYH7ex8"
+# Вставьте ваш токен от BotFather
+TOKEN = "YOUR_BOT_TOKEN"
 API_URL = f"https://api.telegram.org/bot{TOKEN}/"
 
 def get_updates(offset=None):
@@ -10,33 +10,45 @@ def get_updates(offset=None):
     url = API_URL + "getUpdates"
     params = {"timeout": 100, "offset": offset}
     response = requests.get(url, params=params)
-    print("getUpdates Response:", response.json())  # Логируем ответ
-    return response.json()
+    try:
+        return response.json()
+    except Exception as e:
+        print(f"Ошибка при получении обновлений: {e}")
+        return {}
 
 def send_message(chat_id, text):
     """Отправить сообщение пользователю"""
     url = API_URL + "sendMessage"
     payload = {"chat_id": chat_id, "text": text}
-    requests.post(url, json=payload)
+    try:
+        requests.post(url, json=payload)
+    except Exception as e:
+        print(f"Ошибка при отправке сообщения: {e}")
 
 def get_all_gifts():
-    """Тестовый запрос для проверки API и доступных команд"""
-    url = API_URL + "getUpdates"
+    """Тестовый запрос для проверки доступных данных"""
+    url = API_URL + "getUpdates"  # Временно используем getUpdates для теста
     response = requests.get(url)
-    print("API Response:", response.json())  # Логируем полный ответ API
-    return []
+    try:
+        data = response.json()
+        print("API Response:", data)  # Логируем полный ответ для анализа
+        return data.get("result", [])
+    except Exception as e:
+        print(f"Ошибка при запросе подарков: {e}")
+        return []
 
 def handle_command(command, chat_id):
     """Обработка команд от пользователя"""
     if command == "/start":
         welcome_text = (
             "Привет! Я бот для тестирования API.\n"
-            "Отправьте любую команду, чтобы посмотреть доступные данные."
+            "/show_all_gifts - Проверить доступные данные.\n"
+            "/help - Получить справку."
         )
         send_message(chat_id, welcome_text)
 
     elif command == "/show_all_gifts":
-        get_all_gifts()  # Вызов тестового метода
+        get_all_gifts()
         send_message(chat_id, "Проверка доступных данных завершена. Смотрите терминал.")
 
     else:
