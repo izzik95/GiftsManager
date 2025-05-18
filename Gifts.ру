@@ -1,67 +1,46 @@
 import requests
 import time
 
-TOKEN = "7544083847:AAH8JqMkrrcsh--WINi9Kjw0bfcRdYH7ex8"  # Вставьте токен бизнес-бота
+# Вставьте ваш токен
+TOKEN = "7544083847:AAH8JqMkrrcsh--WINi9Kjw0bfcRdYH7ex8"
 API_URL = f"https://api.telegram.org/bot{TOKEN}/"
 
 def get_updates(offset=None):
+    """Получить обновления от Telegram"""
     url = API_URL + "getUpdates"
     params = {"timeout": 100, "offset": offset}
     response = requests.get(url, params=params)
+    print("getUpdates Response:", response.json())  # Логируем ответ
     return response.json()
 
 def send_message(chat_id, text):
+    """Отправить сообщение пользователю"""
     url = API_URL + "sendMessage"
     payload = {"chat_id": chat_id, "text": text}
     requests.post(url, json=payload)
 
 def get_all_gifts():
-    """Получение всех подарков для бизнес-бота"""
-    url = API_URL + "payments.getBusinessAccountGifts"
+    """Тестовый запрос для проверки API и доступных команд"""
+    url = API_URL + "getUpdates"
     response = requests.get(url)
-    if response.status_code == 200:
-        return response.json().get("result", [])
-    else:
-        print(f"Ошибка при получении подарков: {response.status_code}")
-        return []
-
-def toggle_gifts(hide=True):
-    """Скрыть или отобразить все подарки"""
-    gifts = get_all_gifts()
-    if not gifts:
-        print("Нет подарков для обработки.")
-        return
-    
-    for gift in gifts:
-        payload = {
-            "unsave": hide,
-            "user_id": gift["sender_id"],
-            "msg_id": gift["msg_id"]
-        }
-        response = requests.post(API_URL + "payments.saveStarGift", json=payload)
-        if response.status_code != 200:
-            print(f"Ошибка при изменении подарка {gift['msg_id']}")
+    print("API Response:", response.json())  # Логируем полный ответ API
+    return []
 
 def handle_command(command, chat_id):
+    """Обработка команд от пользователя"""
     if command == "/start":
         welcome_text = (
-            "Привет! Я бот для управления подарками.\n"
-            "/hide_all_gifts - Скрыть все подарки\n"
-            "/show_all_gifts - Отобразить все подарки\n"
-            "/help - Справка"
+            "Привет! Я бот для тестирования API.\n"
+            "Отправьте любую команду, чтобы посмотреть доступные данные."
         )
         send_message(chat_id, welcome_text)
 
-    elif command == "/hide_all_gifts":
-        toggle_gifts(hide=True)
-        send_message(chat_id, "Все подарки скрыты.")
-
     elif command == "/show_all_gifts":
-        toggle_gifts(hide=False)
-        send_message(chat_id, "Все подарки отображены.")
+        get_all_gifts()  # Вызов тестового метода
+        send_message(chat_id, "Проверка доступных данных завершена. Смотрите терминал.")
 
     else:
-        send_message(chat_id, "Неизвестная команда. Введите /help для списка команд.")
+        send_message(chat_id, "Неизвестная команда. Попробуйте /show_all_gifts.")
 
 def main():
     offset = None
